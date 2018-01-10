@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Тестування API</title>
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.2/css/bootstrap.min.css" integrity="sha384-PsH8R72JQ3SOdhVi3uxftmaW6Vc51MKb0q5P2rRUpPvrszuE4W1povHYgTpBfshb" crossorigin="anonymous">
+ 
+  <style>
+	pre {
+	   background-color: mintcream;
+	   border: 1px solid silver;
+	   padding: 10px 20px;
+	   max-height: 600px;
+	   overflow-y: auto;
+	   overflow-x: hidden;
+	   }
+	.json-key {
+	   color: brown;
+	   }
+	.json-value {
+	   color: navy;
+	   }
+	.json-string {
+	   color: olive;
+	   }
+	#requestJsonModal{
+		display: none;
+	}
+	
+	#modContent{
+		width: 600px;
+	}
+	
+	#backmodal{
+		position:absolute;
+		left: 15px;
+	}
+	
+  </style>
+</head>
+<body>
+ 
+<button type="button" class="btn btn-primary btn-test" id="met0" onClick = "testBtn(id)" data-toggle="modal" data-target="#testFormApiModal">тест кнопка1</button>
+<button type="button" class="btn btn-primary btn-test" id="met1"  onClick = "testBtn(id)" data-toggle="modal" data-target="#testFormApiModal">тест кнопка2</button>
+<button type="button" class="btn btn-primary btn-test" id="met2" onClick = "testBtn(id)" data-toggle="modal" data-target="#testFormApiModal">тест кнопка3</button>
+<button type="button" class="btn btn-primary btn-test" id="met3" onClick = "testBtn(id)" data-toggle="modal" data-target="#testFormApiModal">тест кнопка4</button>
+<button type="button" class="btn btn-primary btn-test" id="met4" onClick = "testBtn(id)" data-toggle="modal" data-target="#testFormApiModal">тест кнопка5</button>
+<button type="button" class="btn btn-primary btn-test" id="met5" onClick = "testBtn(id)" data-toggle="modal" data-target="#testFormApiModal">тест кнопка6</button>
+<button type="button" class="btn btn-primary btn-test" id="met6" onClick = "testBtn(id)" data-toggle="modal" data-target="#testFormApiModal">тест кнопка7</button>
+<button type="button" class="btn btn-primary btn-test" id="met7" onClick = "testBtn(id)" data-toggle="modal" data-target="#testFormApiModal">тест кнопка8</button>
+
+<!-- Modal -->
+<div class="modal fade" id="testFormApiModal" tabindex="-1" role="dialog" aria-labelledby="testApiModalLabel" aria-hidden="true">
+   <div class="modal-dialog" role="document">
+      <div class="modal-content" id="modContent">
+         <div class="modal-header">
+            <h5 class="modal-title" id="testApiModalLabel">Тестування API INTITA</h5>
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+            </button>
+         </div>
+         <div class="modal-body" id="modalQuestion">
+            <form>
+               <div class="form-group">
+                  <label for="inputApiLabel">Ваш токен/API key</label>
+                  <input type="text" class="form-control" id="api-test" placeholder="Введіть свій токен" required>
+                  <small id="tokenHelp" class="form-text text-muted"><a href="http://google.com" target="_blank">Для отримання інформації, що таке API key, натисніть сюди</a></small>
+               </div>
+               <div class="form-group" id="paramForm">
+                  <label for="inputIdLabel" id="yourParam">Ваш ID</label>
+                  <input type="text" class="form-control" id="param-test" placeholder="Введіть ID" required>
+               </div>
+               <button type="button" class="btn btn-primary"  onClick = "startTestApi()">Спробувати</button>
+            </form>
+         </div>
+         <div class="modal-content" id="requestJsonModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true" role="document">
+            <div class="modal-body" role="document">
+               <pre><code id=jsonRequest></code></pre>
+			   <div class="modal-footer row">
+					<button type="button" class="btn btn-primary" id="backmodal" onclick="clickBack()">Повернутися назад</button>
+					<button type="button" class="btn btn-primary" id="closemodal" data-dismiss="modal">Закрити</button>
+				</div>
+	        </div>
+         </div>
+      </div>
+   </div>
+</div>
+
+ 
+	<script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.3/umd/popper.min.js" integrity="sha384-vFJXuSJphROIrBnz7yo7oB41mKfc8JzQZiCq4NCceLEaO4IHwicKwpJf9c9IpFgh" crossorigin="anonymous"></script>
+	<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.2/js/bootstrap.min.js" integrity="sha384-alpBpkh1PFOepccYVYDB4do5UnbKysX5WZXm3XxPqe5iKTfUKjNkCk9SaVuEZflJ" crossorigin="anonymous"></script>
+	<script src="https://intita.com/api/dist/intita-api-client.min.js"></script>
+  <script>
+	
+	
+	
+	var API_KEY; 
+	var param;
+	var method;
+	var jsonRequest = document.getElementById("jsonRequest");
+	
+	var arrOfMethods = {
+	  met0: ['getUserDetails','userId'],
+	  met1: ['getUserCoursesAndModules','userId'],
+	  met2: ['getCourseInfo','courseId'],
+	  met3: ['getModuleInfo','moduleId'],
+	  met4: ['getCourseModules','courseId'],
+	  met5: ['getCourseTags','courseId'],
+	  met6: ['getModuleTags','moduleId'],
+	  met7: ['getModuleLectures','moduleId']
+	};
+
+	
+	function testBtn(id){
+		clickBack();
+
+		if(id == "met0" || id == "met1"){	
+		document.getElementById('paramForm').style.display = 'none';
+		}
+		else{
+		document.getElementById('paramForm').style.display = 'block';
+		}
+
+        document.getElementById('param-test').placeholder='Введіть ваш '+arrOfMethods[id][1];
+        document.getElementById('yourParam').innerText='Ваш '+arrOfMethods[id][1];
+
+        method = arrOfMethods[id][0];
+        jsonRequest.innerHTML = '';
+	}
+
+
+	function getAPI(){
+		API_KEY = document.getElementById("api-test").value;
+	}
+	
+	
+	function getParam(){
+		param = document.getElementById("param-test").value;
+	}
+	
+	
+	function createINTITAClient(){
+		var client = new INTITAClient({
+			key: API_KEY,
+		});	
+		return client;
+	}
+	
+	
+	function clipStrings(data) {
+		for (property in data) {
+			if (typeof data[property] == 'object') {
+			  clipStrings(data[property]);
+			  continue;
+			}
+			if (typeof data[property] == 'string' && data[property].length > 30) {
+			  data[property] = data[property].substr(0, 30) + "...";
+			}
+		}
+	}
+	
+	
+	function createClient(){
+		createINTITAClient()[method](param, function(error, data) {
+			clipStrings(data);
+			jsonRequest.innerHTML = jsonPrettyPrint.toHtml(data);
+		});
+	}
+
+	
+	var jsonPrettyPrint = {
+	   replacer: function(match, pIndent, pKey, pVal, pEnd) {
+		  var key = '<span class=json-key>';
+		  var val = '<span class=json-value>';
+		  var str = '<span class=json-string>';
+		  var r = pIndent || '';
+		  if (pKey)
+			 r = r + key + pKey.replace(/[": ]/g, '') + '</span>: ';
+		  if (pVal)
+			 r = r + (pVal[0] == '"' ? str : val) + pVal + '</span>';
+		  return r + (pEnd || '');
+		  },
+	   toHtml: function(obj) {
+		  var jsonLine =
+			 /^( *)("[\w]+": )?("[^"]*"|[\w.+-]*)?([,[{])?$/mg;
+		  return JSON.stringify(obj, null, 3)
+			 .replace(/&/g, '&amp;').replace(/\\"/g, '&quot;')
+			 .replace(/</g, '&lt;').replace(/>/g, '&gt;')
+			 .replace(jsonLine, jsonPrettyPrint.replacer);
+		  }
+	   };
+
+	function firstStepTest(){
+        document.getElementById("testApiModalLabel").innerHTML ="Тест " + method;
+        document.getElementById("requestJsonModal").style.display = 'block';
+        document.getElementById("modalQuestion").style.display = 'none';
+	}
+
+	function clickBack(){
+		document.getElementById("testApiModalLabel").innerHTML ="Тестування API INTITA";
+		document.getElementById("requestJsonModal").style.display = 'none';
+		document.getElementById("modalQuestion").style.display = 'block';
+		jsonRequest.innerHTML = '';
+	}
+
+    function startTestApi(){
+        getAPI();
+        getParam();
+        createClient();
+        firstStepTest();
+    }
+
+
+
+
+  </script>
+</body>
+</html>
+
+
+<!-- var API_KEY; 
+	var param;
+	var method;
+	
+	
+	var arrOfMethods = {
+	  met0: ['getUserDetails','userId'],
+	  met1: ['getUserCoursesAndModules','userId'],
+	  met2: ['getCourseInfo','courseId'],
+	  met3: ['getModuleInfo','moduleId'],
+	  met4: ['getCourseModules','courseId'],
+	  met5: ['getCourseTags','courseId'],
+	  met6: ['getModuleTags','moduleId'],
+	  met7: ['getModuleLectures','moduleId']
+	};
+
+	
+	function testBtn(id){
+		clickBack();
+
+		if(id == "met0" || id == "met1"){	
+		document.getElementById('paramForm').style.display = 'none';
+		}
+		else{
+		document.getElementById('paramForm').style.display = 'block';
+		}
+
+        document.getElementById('param-test').placeholder='Введіть ваш '+arrOfMethods[id][1];
+        document.getElementById('yourParam').innerText='Ваш '+arrOfMethods[id][1];
+		document.getElementById("jsonRequest").innerHTML = '';
+
+        method = arrOfMethods[id][0];
+		
+	}
+
+
+	function getAPI(){
+		API_KEY = document.getElementById("api-test").value;
+	}
+	
+	
+	function getParam(){
+		param = document.getElementById("param-test").value;
+	}
+	
+	
+	function createINTITAClient(){
+		var client = new INTITAClient({
+			key: API_KEY,
+		});	
+		return client;
+	}
+	
+	
+	function clipStrings(data) {
+		for (property in data) {
+			if (typeof data[property] == 'object') {
+			  clipStrings(data[property]);
+			  continue;
+			}
+			if (typeof data[property] == 'string' && data[property].length > 30) {
+			  data[property] = data[property].substr(0, 30) + "...";
+			}
+		}
+	}
+	
+	
+	function createClient(){
+		createINTITAClient()[method](param, function(error, data) {
+			clipStrings(data);
+			var jsonRequest = document.getElementById("jsonRequest");
+			jsonRequest.innerHTML = jsonPrettyPrint.toHtml(data);
+		});
+	}
+
+	
+	var jsonPrettyPrint = {
+	   replacer: function(match, pIndent, pKey, pVal, pEnd) {
+		  var key = '<span class=json-key>';
+		  var val = '<span class=json-value>';
+		  var str = '<span class=json-string>';
+		  var r = pIndent || '';
+		  if (pKey)
+			 r = r + key + pKey.replace(/[": ]/g, '') + '</span>: ';
+		  if (pVal)
+			 r = r + (pVal[0] == '"' ? str : val) + pVal + '</span>';
+		  return r + (pEnd || '');
+		  },
+	   toHtml: function(obj) {
+		  var jsonLine =
+			 /^( *)("[\w]+": )?("[^"]*"|[\w.+-]*)?([,[{])?$/mg;
+		  return JSON.stringify(obj, null, 3)
+			 .replace(/&/g, '&amp;').replace(/\\"/g, '&quot;')
+			 .replace(/</g, '&lt;').replace(/>/g, '&gt;')
+			 .replace(jsonLine, jsonPrettyPrint.replacer);
+		  }
+	   };
+
+	function firstStepTest(){
+        document.getElementById("testApiModalLabel").innerHTML ="Тест " + method;
+        document.getElementById("requestJsonModal").style.display = 'block';
+        document.getElementById("modalQuestion").style.display = 'none';
+	}
+
+	function clickBack(){
+		document.getElementById("testApiModalLabel").innerHTML ="Тестування API INTITA";
+		document.getElementById("requestJsonModal").style.display = 'none';
+		document.getElementById("modalQuestion").style.display = 'block';
+		document.getElementById("jsonRequest").innerHTML = '';
+	}
+
+    function startTestApi(){
+        getAPI();
+        getParam();
+        createClient();
+        firstStepTest();
+    } -->
+
+
+
+
+
+
